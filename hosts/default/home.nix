@@ -28,7 +28,7 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
 
-    neofetch
+    fastfetch
 
     # archives
     zip
@@ -40,6 +40,7 @@
     jq # A lightweight and flexible command-line JSON processor
     eza # A modern replacement for ‘ls’
     fzf # A command-line fuzzy finder
+    gh # github cli
 
     # networking tools
     mtr # A network diagnostic tool
@@ -57,8 +58,11 @@
     which
     tree
 
-    #software
+    # chat
     telegram-desktop
+    signal-desktop
+
+    qbittorrent-qt5
 
     # it provides the command `nom` works just like `nix`
     # with more details log output
@@ -67,6 +71,7 @@
     # productivity
     hugo # static site generator
     glow # markdown previewer in terminal
+    obsidian # note taking
 
     btop # replacement of htop/nmon
     iotop # io monitoring
@@ -82,17 +87,22 @@
     # dev
     nodejs_20
     yarn
+    go
 
     # formatters
     prettierd
     stylua
     nixfmt-classic
 
+    # lsps
+    tailwindcss-language-server
+    nodePackages_latest.typescript-language-server
+    lua-language-server
+
     swaylock
     light
   ];
 
-  # basic configuration of git, please change to your own
   programs.git = {
     enable = true;
     userName = "Kranz Aklilu";
@@ -109,6 +119,26 @@
       gcloud.disabled = true;
       line_break.disabled = true;
     };
+  };
+
+  programs.tmux = {
+    enable = true;
+    terminal = "tmux-256color";
+    historyLimit = 100000;
+    plugins = with pkgs;
+      [
+        # {
+        #   plugin = tmux-super-fingers;
+        #   extraConfig = "set -g @super-fingers-key f";
+        # }
+        tmuxPlugins.better-mouse-mode
+      ];
+    extraConfig = ''
+      bind | split-window -h
+      bind - split-window -v
+      unbind '"'
+      unbind %
+    '';
   };
 
   programs.neovim = let
@@ -128,8 +158,8 @@
     vimAlias = true;
 
     extraPackages = with pkgs; [
-      lua-language-server
-      #rnix-lsp
+      #lua-language-server
+      lua52Packages.lua-lsp
 
       ripgrep
       xclip
@@ -286,11 +316,10 @@
       modifier = "Mod4";
       # Use kitty as default terminal
       terminal = "kitty";
-      startup = [
-        # Launch Firefox on start
-        { command = "firefox"; }
-        { command = "kitty"; }
-      ];
+      # trying to startup windows on separate workspaces
+      startup =
+        let modifier = config.wayland.windowManager.sway.config.modifier;
+        in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
       input = {
         "type:touchpad" = {
           natural_scroll = "enabled";
@@ -304,8 +333,12 @@
           "${modifier}+j" = "focus down";
           "${modifier}+k" = "focus up";
           "${modifier}+l" = "focus right";
-          "XF86MonBrightnessDown" = "exec sudo light -U 10";
-          "XF86MonBrightnessUp" = "exec sudo light -A 10";
+          "${modifier}+p" = "workspace back_and_forth";
+          "${modifier}+n" = "workspace next_on_output";
+          "${modifier}+b" = "workspace prev_on_output";
+          "${modifier}+m" = "splith";
+          "XF86MonBrightnessDown" = "exec light -U 10";
+          "XF86MonBrightnessUp" = "exec light -A 10";
         };
     };
   };
