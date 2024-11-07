@@ -57,12 +57,17 @@
     file
     which
     tree
+    ripgrep
+    xclip
+    feh
 
     # chat
     telegram-desktop
     signal-desktop
 
-    qbittorrent-qt5
+    # other software
+    # insecure https://www.openwall.com/lists/oss-security/2024/10/30/4
+    # qbittorrent
 
     # it provides the command `nom` works just like `nix`
     # with more details log output
@@ -85,14 +90,21 @@
     lm_sensors # for `sensors` command
 
     # dev
-    nodejs_20
+    # nodejs_20
+    nodejs_18
     yarn
+    pnpm
     go
 
     # formatters
     prettierd
     stylua
     nixfmt-classic
+
+    #docs
+    libre
+    libreoffice-qt
+    hunspell
 
     # lsps
     tailwindcss-language-server
@@ -101,7 +113,14 @@
 
     swaylock
     light
+    rofi
   ];
+
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    BROWSER = "firefox";
+    TERMINAL = "kitty";
+  };
 
   programs.git = {
     enable = true;
@@ -310,6 +329,13 @@
     };
   };
 
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true; # see note on other shells below
+    nix-direnv.enable = true;
+  };
+
+  # sway config
   wayland.windowManager.sway = {
     enable = true;
     config = rec {
@@ -326,6 +352,39 @@
           tap = "enabled";
         };
       };
+      keybindings =
+        let modifier = config.wayland.windowManager.sway.config.modifier;
+        in lib.mkOptionDefault {
+          "${modifier}+h" = "focus left";
+          "${modifier}+j" = "focus down";
+          "${modifier}+k" = "focus up";
+          "${modifier}+l" = "focus right";
+          "${modifier}+p" = "workspace back_and_forth";
+          "${modifier}+n" = "workspace next_on_output";
+          "${modifier}+b" = "workspace prev_on_output";
+          "${modifier}+m" = "splith";
+          "XF86MonBrightnessDown" = "exec light -U 10";
+          "XF86MonBrightnessUp" = "exec light -A 10";
+        };
+    };
+    extraOptions = [ "--unsupported-gpu" ];
+  };
+  xsession.windowManager.i3 = {
+    enable = true;
+    config = rec {
+      modifier = "Mod4";
+      # Use kitty as default terminal
+      terminal = "kitty";
+      # trying to startup windows on separate workspaces
+      # startup =
+      #   let modifier = config.wayland.windowManager.sway.config.modifier;
+      #   in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
+      # input = {
+      #   "type:touchpad" = {
+      #     natural_scroll = "enabled";
+      #     tap = "enabled";
+      #   };
+      # };
       keybindings =
         let modifier = config.wayland.windowManager.sway.config.modifier;
         in lib.mkOptionDefault {

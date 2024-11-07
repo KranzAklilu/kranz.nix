@@ -68,11 +68,13 @@
     };
 
     windowManager.i3 = {
-      enable = false;
-      extraPackages = with pkgs;
-        [
-          i3status # gives you the default i3 status bar
-        ];
+      enable = true;
+      extraPackages = with pkgs; [
+        i3status # gives you the default i3 status bar
+        i3lock # default i3 screen locker
+        i3blocks # if you are planning on using i3blocks over i3status
+
+      ];
     };
 
     # Configure keymap in X11
@@ -83,30 +85,33 @@
 
   };
 
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        command =
-          "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd 'sway --unsupported-gpu'";
-        user = "greeter";
-      };
-    };
-  };
+  # services.greetd = {
+  #   enable = true;
+  #   settings = {
+  #     default_session = {
+  #       command =
+  #         "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd 'sway --unsupported-gpu'";
+  #       user = "greeter";
+  #     };
+  #   };
+  # };
 
   # bluetooth
   services.blueman.enable = true;
 
   # if using sddm
-  # services.displayManager.defaultSession = "sway";
+  services.displayManager.defaultSession = "none+i3";
   services.libinput.touchpad.naturalScrolling = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = false;
+  services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+
+  #tailscale 
+  services.tailscale.enable = true;
 
   # nessessary for sway
   security.polkit.enable = true;
@@ -160,10 +165,22 @@
   programs.rog-control-center.enable = true;
   programs.zsh.enable = true;
 
-  #programs.sway = {
-  #  enable = true;
-  #  wrapperFeatures.gtk = true;
-  #};
+  # sway
+  programs.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    extraPackages = with pkgs; [
+      linux-firmware
+      swaylock
+      swayidle
+      i3status-rust
+      brightnessctl
+      wayland
+    ];
+    extraSessionCommands = ''
+      export WLR_RENDERER=vulkan
+    '';
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -181,6 +198,13 @@
     zsh
 
     kitty
+    vulkan-tools
+    glxinfo
+    glmark2
+    sway
+
+    # from flake input
+    # prismaPackages."@prisma/language-server"
   ];
   environment.variables.EDITOR = "vim";
 
@@ -208,11 +232,19 @@
   services.tlp = {
     enable = true;
     settings = {
+      CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
 
       CPU_MIN_PERF_ON_AC = 0;
       CPU_MAX_PERF_ON_AC = 40;
       CPU_MIN_PERF_ON_BAT = 0;
       CPU_MAX_PERF_ON_BAT = 20;
+
+      # START_CHARGE_THRESH_BAT0 = 40; # 40 and bellow it starts to charge
+      STOP_CHARGE_THRESH_BAT0 = 90; # 80 and above it stops charging
     };
   };
   services.supergfxd.enable = true;
