@@ -14,6 +14,21 @@
   #  executable = true;  # make all files executable
   #};
 
+  home.file.".config/i3" = {
+    source = ./i3;
+    recursive = true;
+    onChange = ''
+      ${pkgs.i3}/bin/i3-msg reload
+    '';
+  };
+  home.file.".config/polybar" = {
+    source = ./polybar;
+    recursive = true;
+    # onChange = ''
+    #   ${pkgs.polybar}/bin/i3-msg reload
+    # '';
+  };
+
   # encode the file content in nix configuration file directly
   # home.file.".xxx".text = ''
   #     xxx
@@ -95,6 +110,7 @@
     yarn
     pnpm
     go
+    protobuf_26
 
     # formatters
     prettierd
@@ -110,10 +126,12 @@
     tailwindcss-language-server
     nodePackages_latest.typescript-language-server
     lua-language-server
+    gopls
 
-    swaylock
+    #swaylock
     light
     rofi
+    rofi-screenshot
   ];
 
   home.sessionVariables = {
@@ -144,14 +162,15 @@
     enable = true;
     terminal = "tmux-256color";
     historyLimit = 100000;
-    plugins = with pkgs;
-      [
-        # {
-        #   plugin = tmux-super-fingers;
-        #   extraConfig = "set -g @super-fingers-key f";
-        # }
-        tmuxPlugins.better-mouse-mode
-      ];
+    plugins = with pkgs; [
+      # {
+      #   plugin = tmux-super-fingers;
+      #   extraConfig = "set -g @super-fingers-key f";
+      # }
+      tmuxPlugins.better-mouse-mode
+      tmuxPlugins.sensible
+      # tmuxPlugins.vim-tmux-navigator
+    ];
     extraConfig = ''
       bind | split-window -h
       bind - split-window -v
@@ -204,6 +223,11 @@
       plenary-nvim
 
       {
+        plugin = codeium-nvim;
+        config = toLuaFile ./nvim/plugin/codeium.lua;
+      }
+
+      {
         plugin = nvim-lspconfig;
         config = toLuaFile ./nvim/plugin/lsp.lua;
       }
@@ -216,6 +240,11 @@
       {
         plugin = comment-nvim;
         config = toLua ''require("Comment").setup()'';
+      }
+
+      {
+        plugin = typescript-tools-nvim;
+        config = toLuaFile ./nvim/plugin/typescript-tools.lua;
       }
 
       {
@@ -258,11 +287,6 @@
       {
         plugin = nvim-tree-lua;
         config = toLuaFile ./nvim/plugin/nvim-tree.lua;
-      }
-
-      {
-        plugin = typescript-tools-nvim;
-        config = toLuaFile ./nvim/plugin/typescript-tools.lua;
       }
 
       {
@@ -335,6 +359,50 @@
     nix-direnv.enable = true;
   };
 
+  services.polybar = {
+    package = pkgs.polybar.override {
+      alsaSupport = true;
+      pulseSupport = true;
+    };
+    enable = true;
+    script = "exec polybar main &";
+    # config = {
+    #   "bar/main" = {
+    #     wm-restack = "bspwm";
+    #     background = "#EE3E505B";
+    #     foreground = "#FFBABD8D";
+    #     font-0 = "CousineNerdFontMono:size=13:weight=bold;5";
+    #     width = "100%";
+    #     height = 25;
+    #     padding = "10px";
+    #     modules-center = "title";
+    #     modules-right = "date";
+    #     modules-left = "volume";
+    #   };
+    #   "module/title" = {
+    #     type = "internal/xwindow";
+    #     format = "<label>";
+    #     label = "%title%";
+    #   };
+    #   "module/date" = {
+    #     type = "internal/date";
+    #     date = "%d/%m/%y %H:%M";
+    #   };
+    #   "module/volume" = {
+    #     type = "internal/pulseaudio";
+    #     interval = 2;
+    #     format-volume = "<ramp-volume>  <label-volume>";
+    #     label-muted = "";
+    #     label-muted-foreground = "#66";
+    #     ramp-volume-0 = "";
+    #     ramp-volume-1 = "";
+    #     ramp-volume-2 = "";
+    #     click-right = "${pkgs.pavucontrol}/bin/pavucontrol";
+    #   };
+    #
+    # };
+  };
+
   # sway config
   wayland.windowManager.sway = {
     enable = true;
@@ -369,38 +437,38 @@
     };
     extraOptions = [ "--unsupported-gpu" ];
   };
-  xsession.windowManager.i3 = {
-    enable = true;
-    config = rec {
-      modifier = "Mod4";
-      # Use kitty as default terminal
-      terminal = "kitty";
-      # trying to startup windows on separate workspaces
-      # startup =
-      #   let modifier = config.wayland.windowManager.sway.config.modifier;
-      #   in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
-      # input = {
-      #   "type:touchpad" = {
-      #     natural_scroll = "enabled";
-      #     tap = "enabled";
-      #   };
-      # };
-      keybindings =
-        let modifier = config.wayland.windowManager.sway.config.modifier;
-        in lib.mkOptionDefault {
-          "${modifier}+h" = "focus left";
-          "${modifier}+j" = "focus down";
-          "${modifier}+k" = "focus up";
-          "${modifier}+l" = "focus right";
-          "${modifier}+p" = "workspace back_and_forth";
-          "${modifier}+n" = "workspace next_on_output";
-          "${modifier}+b" = "workspace prev_on_output";
-          "${modifier}+m" = "splith";
-          "XF86MonBrightnessDown" = "exec light -U 10";
-          "XF86MonBrightnessUp" = "exec light -A 10";
-        };
-    };
-  };
+  # xsession.windowManager.i3 = {
+  #   enable = true;
+  #   config = rec {
+  #     modifier = "Mod4";
+  #     # Use kitty as default terminal
+  #     terminal = "kitty";
+  #     # trying to startup windows on separate workspaces
+  #     # startup =
+  #     #   let modifier = config.wayland.windowManager.sway.config.modifier;
+  #     #   in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
+  #     # input = {
+  #     #   "type:touchpad" = {
+  #     #     natural_scroll = "enabled";
+  #     #     tap = "enabled";
+  #     #   };
+  #     # };
+  #     # keybindings =
+  #     #   let modifier = config.wayland.windowManager.sway.config.modifier;
+  #     #   in lib.mkOptionDefault {
+  #     #     "${modifier}+h" = "focus left";
+  #     #     "${modifier}+j" = "focus down";
+  #     #     "${modifier}+k" = "focus up";
+  #     #     "${modifier}+l" = "focus right";
+  #     #     "${modifier}+p" = "workspace back_and_forth";
+  #     #     "${modifier}+n" = "workspace next_on_output";
+  #     #     "${modifier}+b" = "workspace prev_on_output";
+  #     #     "${modifier}+m" = "splith";
+  #     #     "XF86MonBrightnessDown" = "exec light -U 10";
+  #     #     "XF86MonBrightnessUp" = "exec light -A 10";
+  #     #   };
+  #   };
+  # };
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage

@@ -23,6 +23,8 @@ require("conform").setup({
 		javascriptreact = { "prettierd" },
 		typescriptreact = { "prettierd" },
 		json = { "prettierd" },
+		yaml = { "prettierd" },
+		yml = { "prettierd" },
 		prisma = { "prettierd" },
 		astro = { "prettierd" },
 	},

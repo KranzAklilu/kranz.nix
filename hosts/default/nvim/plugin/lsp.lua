@@ -44,10 +44,10 @@ require("lspconfig").lua_ls.setup({
 	},
 })
 
-require("lspconfig").rnix.setup({
-	on_attach = on_attach,
-	capabilities = capabilities,
-})
+-- require("lspconfig").rnix.setup({
+-- 	on_attach = on_attach,
+-- 	capabilities = capabilities,
+-- })
 
 require("lspconfig").tsserver.setup({
 	on_attach = on_attach,
@@ -55,6 +55,14 @@ require("lspconfig").tsserver.setup({
 })
 
 require("lspconfig").tailwindcss.setup({
+	on_attach = on_attach,
+	capabilities = capabilities,
+})
+require("lspconfig").gopls.setup({
+	on_attach = on_attach,
+	capabilities = capabilities,
+})
+require("lspconfig").rust_analyzer.setup({
 	on_attach = on_attach,
 	capabilities = capabilities,
 })

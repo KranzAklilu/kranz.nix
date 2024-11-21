@@ -71,10 +71,14 @@
       enable = true;
       extraPackages = with pkgs; [
         i3status # gives you the default i3 status bar
-        i3lock # default i3 screen locker
+        i3lock-color
         i3blocks # if you are planning on using i3blocks over i3status
-
+        imagemagick
+        betterlockscreen
+        rofi
+        polybar
       ];
+      configFile = ./i3/config;
     };
 
     # Configure keymap in X11
@@ -107,6 +111,8 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
+  # hopefully disables xorg from getting stuck when rebuilding
+  systemd.services.display-manager.restartIfChanged = false;
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -174,13 +180,14 @@
       swaylock
       swayidle
       i3status-rust
-      brightnessctl
       wayland
     ];
     extraSessionCommands = ''
       export WLR_RENDERER=vulkan
     '';
   };
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = [ ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -195,6 +202,7 @@
     wget
     curl
     python3
+    rustup
     zsh
 
     kitty
@@ -202,9 +210,10 @@
     glxinfo
     glmark2
     sway
+    pavucontrol
 
-    # from flake input
-    # prismaPackages."@prisma/language-server"
+    brightnessctl
+    openssl
   ];
   environment.variables.EDITOR = "vim";
 
