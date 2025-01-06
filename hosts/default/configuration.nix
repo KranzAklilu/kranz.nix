@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
 
@@ -14,6 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [ "splash" "amd_pstate=disable" ];
 
   environment.pathsToLink =
     [ "/libexec" ]; # links /libexec from derivations to /run/current-system/sw
@@ -56,6 +57,7 @@
     enable = true;
 
     ## Load nvidia driver for Xorg and Wayland
+    # videoDrivers = [ "nvidia" "amdgpu" ];
     videoDrivers = [ "nvidia" ];
 
     desktopManager = {
@@ -85,20 +87,9 @@
     xkb = {
       layout = "us";
       variant = "";
+      options = "ctrl:swapcaps";
     };
-
   };
-
-  # services.greetd = {
-  #   enable = true;
-  #   settings = {
-  #     default_session = {
-  #       command =
-  #         "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd 'sway --unsupported-gpu'";
-  #       user = "greeter";
-  #     };
-  #   };
-  # };
 
   # bluetooth
   services.blueman.enable = true;
@@ -112,7 +103,7 @@
   services.desktopManager.plasma6.enable = true;
 
   # hopefully disables xorg from getting stuck when rebuilding
-  systemd.services.display-manager.restartIfChanged = false;
+  # systemd.services.display-manager.restartIfChanged = false;
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -121,9 +112,6 @@
 
   # nessessary for sway
   security.polkit.enable = true;
-
-  # Enable sound with pipewire.
-  sound.enable = true;
 
   security.rtkit.enable = true;
   services.pipewire = {
@@ -182,15 +170,39 @@
       i3status-rust
       wayland
     ];
+
     extraSessionCommands = ''
-      export WLR_RENDERER=vulkan
+      export MOZ_ENABLE_WAYLAND=1
+      export WLR_DRM_NO_MODIFIERS=1
+      export WLR_DRM_DEVICES=/dev/dri/card0
     '';
+
   };
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = [ ];
 
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall =
+      true; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall =
+      true; # Open ports in the firewall for Source Dedicated Server
+    localNetworkGameTransfers.openFirewall =
+      true; # Open ports in the firewall for Steam Local Network Game Transfers
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.nvidia.acceptLicense = true;
+
+  # nixpkgs.config.qt5 = {
+  #   enable = true;
+  #   platformTheme = "qt5ct";
+  #   style = {
+  #     package = pkgs.utterly-nord-plasma;
+  #     name = "Utterly Nord Plasma";
+  #   };
+  # };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -201,21 +213,36 @@
     vim
     wget
     curl
+    clang
     python3
     rustup
     zsh
 
     kitty
-    vulkan-tools
+    obs-studio
+    vlc
     glxinfo
     glmark2
     sway
     pavucontrol
+    qbittorrent
 
     brightnessctl
     openssl
+
+    # activitywatch
+    vulkan-headers
+
+    # kde themeing
+    libsForQt5.qtstyleplugin-kvantum
+    libsForQt5.qt5ct
+    killall
+    vulkan-loader
+    vulkan-validation-layers
+    vulkan-tools
   ];
   environment.variables.EDITOR = "vim";
+  environment.variables = { WLR_RENDERER = "vulkan"; };
 
   # Add docker
   virtualisation.docker.enable = true;
@@ -236,7 +263,12 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
 
-  # for 
+  # powerManagement.powertop.enable =
+  #   true; # enable powertop auto tuning on startup.
+  # services.system76-scheduler.settings.cfsProfiles.enable =
+  #   true; # Better scheduling for CPU cycles - thanks System76!!!
+  # powerManagement.cpuFreqGovernor = "performance";
+
   services.power-profiles-daemon.enable = false;
   services.tlp = {
     enable = true;
@@ -244,16 +276,19 @@
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_power";
       CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
 
-      CPU_MIN_PERF_ON_AC = 0;
-      CPU_MAX_PERF_ON_AC = 40;
-      CPU_MIN_PERF_ON_BAT = 0;
-      CPU_MAX_PERF_ON_BAT = 20;
+      # CPU_MIN_PERF_ON_AC = 0;
+      CPU_MAX_PERF_ON_AC = 90;
+      # CPU_MIN_PERF_ON_BAT = 0;
+      CPU_MAX_PERF_ON_BAT = 40;
 
-      # START_CHARGE_THRESH_BAT0 = 40; # 40 and bellow it starts to charge
-      STOP_CHARGE_THRESH_BAT0 = 90; # 80 and above it stops charging
+      CPU_BOOST_ON_AC = 1;
+      CPU_BOOST_ON_BAT = 0;
+
+      START_CHARGE_THRESH_BAT1 = 75; # 75 and bellow it starts to charge
+      STOP_CHARGE_THRESH_BAT1 = 81; # 81 and above it stops charging
     };
   };
   services.supergfxd.enable = true;
@@ -281,8 +316,8 @@
     };
   };
 
-  # Enable OpenGL
-  hardware.opengl = {
+  # Enable graphics
+  hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [ vulkan-validation-layers ];
   };
@@ -302,7 +337,7 @@
 
     # Fine-grained power management. Turns off GPU when not in use.
     # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-    powerManagement.finegrained = true;
+    # powerManagement.finegrained = true;
 
     # Use the NVidia open source kernel module (not to be confused with the
     # independent third-party "nouveau" open source driver).
@@ -318,25 +353,16 @@
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    #package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
     prime = {
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-      #sync.enable = true;
+      # offload = {
+      #   enable = true;
+      #   enableOffloadCmd = true;
+      # };
+      sync.enable = true;
+
       amdgpuBusId = "PCI:101:0:0";
       nvidiaBusId = "PCI:1:0:0";
-    };
-
-    package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
-      version = "555.58.02";
-      sha256_64bit = "sha256-xctt4TPRlOJ6r5S54h5W6PT6/3Zy2R4ASNFPu8TSHKM=";
-      sha256_aarch64 = "sha256-wb20isMrRg8PeQBU96lWJzBMkjfySAUaqt4EgZnhyF8=";
-      openSha256 = "sha256-8hyRiGB+m2hL3c9MDA/Pon+Xl6E788MZ50WrrAGUVuY=";
-      settingsSha256 = "sha256-ZpuVZybW6CFN/gz9rx+UJvQ715FZnAOYfHn5jt5Z2C8=";
-      persistencedSha256 =
-        "sha256-a1D7ZZmcKFWfPjjH1REqPM5j/YLWKnbkP9qfRyIyxAw=";
     };
   };
 }

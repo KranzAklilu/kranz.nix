@@ -8,11 +8,14 @@
   # home.file.".config/sway/wallpaper.jpg".source = ./wallpaper.jpg;
 
   # link all files in `./scripts` to `~/.config/i3/scripts`
-  #home.file.".config/sway/config" = {
-  #  source = ./sway/config;
-  #  recursive = true;   # link recursively
-  #  executable = true;  # make all files executable
-  #};
+  home.file.".config/sway" = {
+    source = ./sway;
+    recursive = true; # link recursively
+    executable = true; # make all files executable
+    onChange = ''
+      ${pkgs.sway}/bin/swaymsg reload
+    '';
+  };
 
   home.file.".config/i3" = {
     source = ./i3;
@@ -21,13 +24,8 @@
       ${pkgs.i3}/bin/i3-msg reload
     '';
   };
-  home.file.".config/polybar" = {
-    source = ./polybar;
-    recursive = true;
-    # onChange = ''
-    #   ${pkgs.polybar}/bin/i3-msg reload
-    # '';
-  };
+  home.file.".config/polybar" = { source = ./polybar; };
+  home.file.".config/rofi" = { source = ./rofi; };
 
   # encode the file content in nix configuration file directly
   # home.file.".xxx".text = ''
@@ -83,6 +81,7 @@
     # other software
     # insecure https://www.openwall.com/lists/oss-security/2024/10/30/4
     # qbittorrent
+    postman
 
     # it provides the command `nom` works just like `nix`
     # with more details log output
@@ -105,8 +104,8 @@
     lm_sensors # for `sensors` command
 
     # dev
-    # nodejs_20
-    nodejs_18
+    nodejs_20
+    # nodejs_18
     yarn
     pnpm
     go
@@ -132,6 +131,9 @@
     light
     rofi
     rofi-screenshot
+
+    #ai stuff
+    codeium
   ];
 
   home.sessionVariables = {
@@ -163,19 +165,25 @@
     terminal = "tmux-256color";
     historyLimit = 100000;
     plugins = with pkgs; [
-      # {
-      #   plugin = tmux-super-fingers;
-      #   extraConfig = "set -g @super-fingers-key f";
-      # }
       tmuxPlugins.better-mouse-mode
       tmuxPlugins.sensible
-      # tmuxPlugins.vim-tmux-navigator
+      tmuxPlugins.catppuccin
     ];
     extraConfig = ''
       bind | split-window -h
       bind - split-window -v
+
       unbind '"'
       unbind %
+      set-option -g mouse on
+      set -g @catppuccin_flavour 'mocha'
+
+      set-window-option -g mode-keys vi
+      bind-key -T copy-mode-vi v send -X begin-selection
+      bind-key -T copy-mode-vi V send -X select-line
+      bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'xclip -in -selection clipboard'
+      unbind C-b
+      set -g prefix C-s
     '';
   };
 
@@ -190,6 +198,14 @@
       ${builtins.readFile file}
       EOF
     '';
+    rustToolchain = pkgs.fenix.complete.withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+      "rust-analyzer"
+    ];
   in {
     enable = true;
 
@@ -202,6 +218,7 @@
       ripgrep
       xclip
       wl-clipboard
+      rustToolchain
     ];
 
     plugins = with pkgs.vimPlugins; [
@@ -221,6 +238,8 @@
       nvim-web-devicons
 
       plenary-nvim
+
+      undotree
 
       {
         plugin = codeium-nvim;
@@ -344,9 +363,13 @@
     };
     shellAliases = {
       ll = "ls -l";
+      ":q" = "exit";
       update = "sudo nixos-rebuild switch --flake .";
       test = "sudo nixos-rebuild test --flake .";
     };
+    initExtra = ''
+      export PATH=$HOME/.cargo/bin:$PATH
+    '';
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -363,112 +386,19 @@
     package = pkgs.polybar.override {
       alsaSupport = true;
       pulseSupport = true;
+      i3Support = true;
+      i3 = pkgs.i3;
+      jsoncpp = pkgs.jsoncpp;
     };
     enable = true;
-    script = "exec polybar main &";
-    # config = {
-    #   "bar/main" = {
-    #     wm-restack = "bspwm";
-    #     background = "#EE3E505B";
-    #     foreground = "#FFBABD8D";
-    #     font-0 = "CousineNerdFontMono:size=13:weight=bold;5";
-    #     width = "100%";
-    #     height = 25;
-    #     padding = "10px";
-    #     modules-center = "title";
-    #     modules-right = "date";
-    #     modules-left = "volume";
-    #   };
-    #   "module/title" = {
-    #     type = "internal/xwindow";
-    #     format = "<label>";
-    #     label = "%title%";
-    #   };
-    #   "module/date" = {
-    #     type = "internal/date";
-    #     date = "%d/%m/%y %H:%M";
-    #   };
-    #   "module/volume" = {
-    #     type = "internal/pulseaudio";
-    #     interval = 2;
-    #     format-volume = "<ramp-volume>  <label-volume>";
-    #     label-muted = "";
-    #     label-muted-foreground = "#66";
-    #     ramp-volume-0 = "";
-    #     ramp-volume-1 = "";
-    #     ramp-volume-2 = "";
-    #     click-right = "${pkgs.pavucontrol}/bin/pavucontrol";
-    #   };
-    #
-    # };
+    script = "exec polybar main";
   };
 
   # sway config
   wayland.windowManager.sway = {
     enable = true;
-    config = rec {
-      modifier = "Mod4";
-      # Use kitty as default terminal
-      terminal = "kitty";
-      # trying to startup windows on separate workspaces
-      startup =
-        let modifier = config.wayland.windowManager.sway.config.modifier;
-        in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
-      input = {
-        "type:touchpad" = {
-          natural_scroll = "enabled";
-          tap = "enabled";
-        };
-      };
-      keybindings =
-        let modifier = config.wayland.windowManager.sway.config.modifier;
-        in lib.mkOptionDefault {
-          "${modifier}+h" = "focus left";
-          "${modifier}+j" = "focus down";
-          "${modifier}+k" = "focus up";
-          "${modifier}+l" = "focus right";
-          "${modifier}+p" = "workspace back_and_forth";
-          "${modifier}+n" = "workspace next_on_output";
-          "${modifier}+b" = "workspace prev_on_output";
-          "${modifier}+m" = "splith";
-          "XF86MonBrightnessDown" = "exec light -U 10";
-          "XF86MonBrightnessUp" = "exec light -A 10";
-        };
-    };
     extraOptions = [ "--unsupported-gpu" ];
   };
-  # xsession.windowManager.i3 = {
-  #   enable = true;
-  #   config = rec {
-  #     modifier = "Mod4";
-  #     # Use kitty as default terminal
-  #     terminal = "kitty";
-  #     # trying to startup windows on separate workspaces
-  #     # startup =
-  #     #   let modifier = config.wayland.windowManager.sway.config.modifier;
-  #     #   in [ { command = "kitty"; } { command = "${modifier}+9 & firefox"; } ];
-  #     # input = {
-  #     #   "type:touchpad" = {
-  #     #     natural_scroll = "enabled";
-  #     #     tap = "enabled";
-  #     #   };
-  #     # };
-  #     # keybindings =
-  #     #   let modifier = config.wayland.windowManager.sway.config.modifier;
-  #     #   in lib.mkOptionDefault {
-  #     #     "${modifier}+h" = "focus left";
-  #     #     "${modifier}+j" = "focus down";
-  #     #     "${modifier}+k" = "focus up";
-  #     #     "${modifier}+l" = "focus right";
-  #     #     "${modifier}+p" = "workspace back_and_forth";
-  #     #     "${modifier}+n" = "workspace next_on_output";
-  #     #     "${modifier}+b" = "workspace prev_on_output";
-  #     #     "${modifier}+m" = "splith";
-  #     #     "XF86MonBrightnessDown" = "exec light -U 10";
-  #     #     "XF86MonBrightnessUp" = "exec light -A 10";
-  #     #   };
-  #   };
-  # };
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage

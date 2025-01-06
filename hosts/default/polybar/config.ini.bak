@@ -7,62 +7,13 @@ secondary = #8ABEB7
 alert = #A54242
 disabled = #707880
 
-
-
 [bar/main]
 width = 100%
 height = 24pt
 radius = 6
-monitor = eDP-1-0
 
-scroll-up = "#i3.prev"
-scroll-down = "#i3.next"
-
-background = ${colors.background}
-foreground = ${colors.foreground}
-
-line-size = 3pt
-
-border-size = 4pt
-border-color = #00000000
-
-padding-left = 4
-padding-right = 1
-
-module-margin = 3
-
-separator = |
-separator-foreground = ${colors.disabled}
-
-font-0 = dejavusansmono nerd font mono:pixelsize=16:antialias=true;2.5
-font-1 = symbols nerd font:pixelsize=16;1
-
-modules-left = i3 xwindow
-modules-right = filesystem pulseaudio memory cpu github backlight wlan speed battery date systray powermenu
-
-cursor-click = pointer
-cursor-scroll = ns-resize
-
-enable-ipc = true
-
-; wm-restack = generic
-; wm-restack = bspwm
-; wm-restack = i3
-
-; override-redirect = true
-;
-
-
-[bar/secondary]
-width = 100%
-height = 36pt
-radius = 8
-monitor = HDMI-0
 ; dpi = 96
 
-scroll-up = "#i3.prev"
-scroll-down = "#i3.next"
-
 background = ${colors.background}
 foreground = ${colors.foreground}
 
@@ -79,11 +30,11 @@ module-margin = 3
 separator = |
 separator-foreground = ${colors.disabled}
 
-font-0 = dejavusansmono nerd font mono:pixelsize=16:antialias=true;2.5
-font-1 = symbols nerd font:pixelsize=16;1
+font-0 = DejaVuSansMono Nerd Font Mono:pixelsize=16:antialias=true;2.5
+font-1 = Symbols Nerd Font:pixelsize=16;1
 
-modules-left = i3 xwindow
-modules-right = filesystem pulseaudio memory cpu github backlight wlan speed battery date powermenu
+modules-left = xworkspaces xwindow
+modules-right = filesystem pulseaudio memory cpu github backlight wlan eth battery date powermenu
 
 cursor-click = pointer
 cursor-scroll = ns-resize
@@ -95,55 +46,33 @@ enable-ipc = true
 ; wm-restack = i3
 
 ; override-redirect = true
-;
 
-[module/i3]
-type = internal/i3
+; This module is not active by default (to enable it, add it to one of the
+; modules-* list above).
+; Please note that only a single tray can exist at any time. If you launch
+; multiple bars with this module, only a single one will show it, the others
+; will produce a warning. Which bar gets the module is timing dependent and can
+; be quite random.
+; For more information, see the documentation page for this module:
+; https://polybar.readthedocs.io/en/stable/user/modules/tray.html
+[module/systray]
+type = internal/tray
 
-; Only show workspaces defined on the same output as the bar
-;
-; Useful if you want to show monitor specific workspaces
-; on different bars
-;
-; Default: false
-pin-workspaces = true
+format-margin = 8pt
+tray-spacing = 16pt
 
-; Show urgent workspaces regardless of whether the workspace is actually hidden 
-; by pin-workspaces.
-;
-; Default: false
-; New in version 3.6.0
-show-urgent = true
+[module/xworkspaces]
+type = internal/xworkspaces
 
-; This will split the workspace name on ':'
-; Default: false
-strip-wsnumbers = true
+ws-icon-6 = 2;
+ws-icon-8 = 1;
+ws-icon-9 = 3;󰈹
+ws-icon-default = 
 
-; Sort the workspaces by index instead of the default
-; sorting that groups the workspaces by output
-; Default: false
-index-sort = true
-
-; Create click handler used to focus workspace
-; Default: true
-enable-click = false
-
-; Create scroll handlers used to cycle workspaces
-; Default: true
-enable-scroll = false
-
-; Wrap around when reaching the first/last workspace
-; Default: true
-wrapping-scroll = false
-
-; Set the scroll cycle direction 
-; Default: true
-reverse-scroll = false
-
-label-focused = %name% %icon%
-label-focused-background = ${colors.background-alt}
-label-focused-underline= ${colors.primary}
-label-focused-padding = 1
+label-active = %name% %icon%
+label-active-background = ${colors.background-alt}
+label-active-underline= ${colors.primary}
+label-active-padding = 1
 
 label-occupied = %name% %icon%
 label-occupied-padding = 1
@@ -155,13 +84,6 @@ label-urgent-padding = 1
 label-empty = %name% %icon%
 label-empty-foreground = ${colors.disabled}
 label-empty-padding = 1
-
-
-[module/systray]
-type = internal/tray
-
-format-margin = 8pt
-tray-spacing = 16pt
 
 [module/xwindow]
 type = internal/xwindow
@@ -227,6 +149,16 @@ empty-notifications = false
 ; Number of seconds in between requests
 interval = 10
 
+[module/backlight]
+type = internal/xbacklight
+
+; XRandR output to get get values from
+; Default: the monitor defined for the running bar
+; output = HDMI-1
+format = <label>
+
+label = %percentage%%
+
 [network-base]
 type = internal/network
 interval = 5
@@ -239,10 +171,10 @@ inherit = network-base
 interface-type = wireless
 label-connected = %{F#F0C674}%ifname%%{F-} %essid% %local_ip%
 
-[module/speed]
+[module/eth]
 inherit = network-base
-interface-type = wireless
-label-connected = %{F#F0C674}󰇚 %downspeed% | 󰕒 %upspeed%
+interface-type = wired
+label-connected = %{F#F0C674}%ifname%%{F-} %local_ip%
 
 [module/battery]
 type = internal/battery
@@ -328,3 +260,7 @@ menu-2-0 = power off
 menu-2-0-exec = sudo poweroff
 menu-2-1 = cancel
 menu-2-1-exec = menu-open-0
+
+[settings]
+screenchange-reload = false
+pseudo-transparency = true

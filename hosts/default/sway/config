@@ -1,9 +1,15 @@
-include ~/.config/i3/workspaces.conf
-include ~/.config/i3/theme.conf
-
-set $fm eDP-1-0
-set $sm HDMI-0
 set $mod Mod4
+
+include ~/.config/sway/workspaces.conf
+include ~/.config/sway/theme.conf
+
+# connected screens variables
+ exec screens=($(xrandr | awk '$2=="connected"{print $1}') )
+ exec fm=${screens[1]}
+ exec sm=${screens[2]}
+ exec echo fm
+ set $fm fm
+ set $sm sm
 
 
 font pango:monospace 8.000000
@@ -22,32 +28,26 @@ client.urgent #2f343a #900000 #ffffff #900000 #900000
 client.placeholder #000000 #0c0c0c #ffffff #000000 #0c0c0c
 client.background #ffffff
 
-# main
-bindsym $mod+Up focus up
+# keybindings
 bindsym $mod+Down focus down
 bindsym $mod+Left focus left
-bindsym $mod+Right focus right
 bindsym $mod+Return exec kitty
+bindsym $mod+Right focus right
 
-# move
-bindsym $mod+Shift+l move right
-bindsym $mod+Shift+h move left
-bindsym $mod+Shift+k move up
-bindsym $mod+Shift+j move down
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Right move right
 bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+c reload
-bindsym $mod+Shift+e exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'
+bindsym $mod+Shift+e exec swaynag -t warning -m 'Do you want to exit sway?' -b 'Yes' 'swaymsg exit'
 bindsym $mod+Shift+minus move scratchpad
 bindsym $mod+Shift+q kill
 bindsym $mod+Shift+r restart
 bindsym $mod+Shift+space floating toggle
-
+bindsym $mod+Up focus up
 bindsym $mod+a focus parent
 bindsym $mod+d exec rofi -no-config -no-lazy-grab -show drun -modi drun -theme ~/.config/rofi/theme.rasi
-bindsym $mod+Shift+s exec rofi-screenshot -theme ~/.config/rofi/theme.rasi
+bindsym $mod+Shift+s exec rofi-screenshot
 bindsym $mod+e layout toggle split
 bindsym $mod+f fullscreen toggle
 bindsym $mod+minus scratchpad show
@@ -60,7 +60,7 @@ bindsym $mod+j focus down
 bindsym $mod+h focus left
 bindsym $mod+l focus right
 bindsym $mod+k focus up
-# bindsym $mod+Shift+l exec systemctl suspend & betterlockscreen -l
+bindsym $mod+Shift+l exec systemctl suspend & betterlockscreen -l
 
 mode "resize" {
   bindsym Down resize grow height 10 px or 10 ppt
@@ -72,35 +72,42 @@ mode "resize" {
 }
 
 # brightness
-bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl --min-val=2 -q -d amdgpu_bl1 s 3%- 
-bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl -q -d amdgpu_bl1 s 3%+
+bindsym XF86MonBrightnessUp exec sudo light -A 20
+bindsym XF86MonBrightnessDown exec sudo light -U 20
 
-
-# bar {
-#   font pango:monospace 8.000000
-#   mode dock
-#   hidden_state hide
-#   position bottom
-#   status_command i3status
-#   i3bar_command i3bar
-#   workspace_buttons yes
-#   strip_workspace_numbers no
-#   tray_output primary
-#   colors {
-#     background #000000
-#     statusline #ffffff
-#     separator #666666
-#     focused_workspace #4c7899 #285577 #ffffff
-#     active_workspace #333333 #5f676a #ffffff
-#     inactive_workspace #333333 #222222 #888888
-#     urgent_workspace #2f343a #900000 #ffffff
-#     binding_mode #2f343a #900000 #ffffff
-#   }
-# }
-
-exec aw-qt
-
-exec --no-startup-id i3-msg 'workspace 9; exec firefox'
-exec --no-startup-id i3-msg 'workspace 10; exec kitty'
+bar {
+  font pango:monospace 8.000000
+  mode dock
+  hidden_state hide
+  position bottom
+  status_command i3status
+  swaybar_command swaybar
+  workspace_buttons yes
+  strip_workspace_numbers no
+  tray_output primary
+  colors {
+    background #000000
+    statusline #ffffff
+    separator #666666
+    focused_workspace #4c7899 #285577 #ffffff
+    active_workspace #333333 #5f676a #ffffff
+    inactive_workspace #333333 #222222 #888888
+    urgent_workspace #2f343a #900000 #ffffff
+    binding_mode #2f343a #900000 #ffffff
+  }
+}
+input type:touchpad {
+          natural_scroll  enabled
+          tap  enabled
+}
+input type:keyboard {
+  # Capslock key should work as escape key
+  # See /usr/share/X11/xkb/rules/xorg.lst for options
+  xkb_options ctrl:nocaps
+}
 
 exec ~/.config/polybar/launch.sh
+exec aw-qt
+
+exec --no-startup-id swaymsg 'workspace 9; exec firefox'
+exec --no-startup-id swaymsg 'workspace 10; exec kitty'
