@@ -217,6 +217,7 @@
     python3
     rustup
     zsh
+    nodePackages.prisma
 
     kitty
     obs-studio
@@ -241,8 +242,20 @@
     vulkan-validation-layers
     vulkan-tools
   ];
-  environment.variables.EDITOR = "vim";
-  environment.variables = { WLR_RENDERER = "vulkan"; };
+  environment.variables = {
+    EDITOR = "vim";
+    WLR_RENDERER = "vulkan";
+  };
+  environment.sessionVariables = {
+    PRISMA_SCHEMA_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/schema-engine";
+    PRISMA_QUERY_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/query-engine";
+    PRISMA_QUERY_ENGINE_LIBRARY =
+      "${pkgs.prisma-engines}/lib/libquery_engine.node";
+    PRISMA_INTROSPECTION_ENGINE_BINARY =
+      "${pkgs.prisma-engines}/bin/introspection-engine";
+    PRISMA_FMT_BINARY = "${pkgs.prisma-engines}/bin/prisma-fmt";
+    PRISMA_CLI_BINARY_TARGETS = "linux";
+  };
 
   # Add docker
   virtualisation.docker.enable = true;
@@ -276,19 +289,27 @@
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_power";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "powersave";
       CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
 
-      # CPU_MIN_PERF_ON_AC = 0;
-      CPU_MAX_PERF_ON_AC = 90;
-      # CPU_MIN_PERF_ON_BAT = 0;
-      CPU_MAX_PERF_ON_BAT = 40;
+      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_BAT = "low-power";
+
+      AMDGPU_ABM_LEVEL_ON_AC = 0;
+      AMDGPU_ABM_LEVEL_ON_BAT = 3;
+
+      CPU_MIN_PERF_ON_AC = 0;
+      CPU_MAX_PERF_ON_AC = 100;
+      CPU_MIN_PERF_ON_BAT = 0;
+      CPU_MAX_PERF_ON_BAT = 30;
 
       CPU_BOOST_ON_AC = 1;
       CPU_BOOST_ON_BAT = 0;
+      CPU_HWP_DYN_BOOST_ON_AC = 1;
+      CPU_HWP_DYN_BOOST_ON_BAT = 0;
 
-      START_CHARGE_THRESH_BAT1 = 75; # 75 and bellow it starts to charge
-      STOP_CHARGE_THRESH_BAT1 = 81; # 81 and above it stops charging
+      START_CHARGE_THRESH_BAT1 = 0;
+      STOP_CHARGE_THRESH_BAT1 = 80; # 80 and above it stops charging
     };
   };
   services.supergfxd.enable = true;

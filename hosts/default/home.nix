@@ -26,6 +26,7 @@
   };
   home.file.".config/polybar" = { source = ./polybar; };
   home.file.".config/rofi" = { source = ./rofi; };
+  home.file.".config/theme/images" = { source = ./images; };
 
   # encode the file content in nix configuration file directly
   # home.file.".xxx".text = ''
@@ -170,11 +171,21 @@
       tmuxPlugins.catppuccin
     ];
     extraConfig = ''
-      bind | split-window -h
-      bind - split-window -v
+      unbind C-b
+      set -g prefix C-s
 
       unbind '"'
       unbind %
+
+      bind | split-window -h
+      bind - split-window -v
+      bind h select-pane -L
+      bind j select-pane -D
+      bind k select-pane -U
+      bind l select-pane -R
+      bind p last-window
+      bind b previous-window
+
       set-option -g mouse on
       set -g @catppuccin_flavour 'mocha'
 
@@ -182,8 +193,6 @@
       bind-key -T copy-mode-vi v send -X begin-selection
       bind-key -T copy-mode-vi V send -X select-line
       bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel 'xclip -in -selection clipboard'
-      unbind C-b
-      set -g prefix C-s
     '';
   };
 
@@ -369,6 +378,12 @@
     };
     initExtra = ''
       export PATH=$HOME/.cargo/bin:$PATH
+      export PRISMA_SCHEMA_ENGINE_BINARY="${pkgs.prisma-engines}/bin/schema-engine"
+      export PRISMA_QUERY_ENGINE_BINARY="${pkgs.prisma-engines}/bin/query-engine"
+      export PRISMA_QUERY_ENGINE_LIBRARY="${pkgs.prisma-engines}/lib/libquery_engine.node"
+      export PRISMA_INTROSPECTION_ENGINE_BINARY="${pkgs.prisma-engines}/bin/introspection-engine"
+      export PRISMA_FMT_BINARY="${pkgs.prisma-engines}/bin/prisma-fmt"
+
     '';
     history = {
       size = 10000;
@@ -389,6 +404,7 @@
       i3Support = true;
       i3 = pkgs.i3;
       jsoncpp = pkgs.jsoncpp;
+      githubSupport = true;
     };
     enable = true;
     script = "exec polybar main";

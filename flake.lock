@@ -58,11 +58,46 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1669542132,
+        "narHash": "sha256-DRlg++NJAwPh8io3ExBJdNW7Djs3plVI5jgYQ+iXAZQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a115bb9bd56831941be3776c8a94005867f316a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "prisma": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1736341675,
+        "narHash": "sha256-GR7S7PoQWArXxMVtJpGJPoDvhrMaOOtNyR2wNctunXk=",
+        "owner": "pimeys",
+        "repo": "nixos-prisma",
+        "rev": "fc7dcb957ccb4aef06a04d7bd903ce21c779b1b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pimeys",
+        "repo": "nixos-prisma",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "fenix": "fenix",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "prisma": "prisma"
       }
     },
     "rust-analyzer-src": {

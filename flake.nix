@@ -7,7 +7,7 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # prisma = { url = "github:pimeys/nixos-prisma"; };
+    prisma = { url = "github:pimeys/nixos-prisma"; };
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,7 +18,7 @@
     let
       common = { pkgs, config, ... }: {
         nixpkgs.overlays = [
-          # inputs.prisma.overlay
+          inputs.prisma.overlay
           inputs.fenix.overlays.default # Add Fenix overlay
         ];
       };
