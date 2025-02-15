@@ -69,17 +69,11 @@
       };
     };
 
+    displayManager.lightdm.enable = true;
+
     windowManager.i3 = {
       enable = true;
-      extraPackages = with pkgs; [
-        i3status # gives you the default i3 status bar
-        i3lock-color
-        i3blocks # if you are planning on using i3blocks over i3status
-        imagemagick
-        betterlockscreen
-        rofi
-        polybar
-      ];
+      extraPackages = with pkgs; [ betterlockscreen rofi polybar ];
       configFile = ./i3/config;
     };
 
@@ -95,11 +89,11 @@
   services.blueman.enable = true;
 
   # if using sddm
-  services.displayManager.defaultSession = "none+i3";
+  services.displayManager.defaultSession = "xfce+i3";
   services.libinput.touchpad.naturalScrolling = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
+  # services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
   # hopefully disables xorg from getting stuck when rebuilding
@@ -112,7 +106,8 @@
 
   # nessessary for sway
   security.polkit.enable = true;
-
+  # sound.enable = true;
+  hardware.alsa.enablePersistence = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -142,7 +137,7 @@
   users.users.kranz = {
     isNormalUser = true;
     description = "kranz";
-    extraGroups = [ "networkmanager" "wheel" "media" "video" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" "media" "video" "audio" "docker" ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGcRmO87UaWNhjhM5XdYGZeOa2vkeZA5GJdYYC/humnb kranz@asus-g14"
@@ -213,9 +208,10 @@
     vim
     wget
     curl
-    clang
     python3
-    rustup
+    poetry
+    # clang
+    # rustup
     zsh
     nodePackages.prisma
 
@@ -241,6 +237,7 @@
     vulkan-loader
     vulkan-validation-layers
     vulkan-tools
+    alsa-utils
   ];
   environment.variables = {
     EDITOR = "vim";
@@ -286,13 +283,13 @@
   services.tlp = {
     enable = true;
     settings = {
-      CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      CPU_SCALING_GOVERNOR_ON_AC = "ondemand";
       CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
       CPU_ENERGY_PERF_POLICY_ON_BAT = "powersave";
       CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
 
-      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_AC = "balanced";
       PLATFORM_PROFILE_ON_BAT = "low-power";
 
       AMDGPU_ABM_LEVEL_ON_AC = 0;
@@ -348,13 +345,13 @@
   hardware.nvidia = {
 
     # Modesetting is required.
-    modesetting.enable = true;
+    modesetting.enable = false;
 
     # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
     # Enable this if you have graphical corruption issues or application crashes after waking
     # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead 
     # of just the bare essentials.
-    powerManagement.enable = false;
+    powerManagement.enable = true;
 
     # Fine-grained power management. Turns off GPU when not in use.
     # Experimental and only works on modern Nvidia GPUs (Turing or newer).

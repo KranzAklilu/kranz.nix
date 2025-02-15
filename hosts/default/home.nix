@@ -35,7 +35,7 @@
 
   # set cursor size and dpi for 4k monitor
   xresources.properties = {
-    "Xcursor.size" = 16;
+    "Xcursor.size" = 24;
     "Xft.dpi" = 172;
   };
 
@@ -125,6 +125,7 @@
     # lsps
     tailwindcss-language-server
     nodePackages_latest.typescript-language-server
+    nodePackages_latest."@prisma/language-server"
     lua-language-server
     gopls
 
@@ -135,6 +136,7 @@
 
     #ai stuff
     codeium
+
   ];
 
   home.sessionVariables = {
@@ -207,14 +209,14 @@
       ${builtins.readFile file}
       EOF
     '';
-    rustToolchain = pkgs.fenix.complete.withComponents [
-      "cargo"
-      "clippy"
-      "rust-src"
-      "rustc"
-      "rustfmt"
-      "rust-analyzer"
-    ];
+    # rustToolchain = pkgs.fenix.complete.withComponents [
+    #   "cargo"
+    #   "clippy"
+    #   "rust-src"
+    #   "rustc"
+    #   "rustfmt"
+    #   "rust-analyzer"
+    # ];
   in {
     enable = true;
 
@@ -227,7 +229,7 @@
       ripgrep
       xclip
       wl-clipboard
-      rustToolchain
+      # rustToolchain
     ];
 
     plugins = with pkgs.vimPlugins; [
@@ -249,6 +251,7 @@
       plenary-nvim
 
       undotree
+      copilot-vim
 
       {
         plugin = codeium-nvim;
@@ -331,6 +334,7 @@
           p.tree-sitter-typescript
           p.tree-sitter-go
           p.tree-sitter-gomod
+          p.tree-sitter-prisma
         ]));
         config = toLuaFile ./nvim/plugin/treesitter.lua;
       }
@@ -373,11 +377,10 @@
     shellAliases = {
       ll = "ls -l";
       ":q" = "exit";
-      update = "sudo nixos-rebuild switch --flake .";
+      switch = "sudo nixos-rebuild switch --flake .";
       test = "sudo nixos-rebuild test --flake .";
     };
     initExtra = ''
-      export PATH=$HOME/.cargo/bin:$PATH
       export PRISMA_SCHEMA_ENGINE_BINARY="${pkgs.prisma-engines}/bin/schema-engine"
       export PRISMA_QUERY_ENGINE_BINARY="${pkgs.prisma-engines}/bin/query-engine"
       export PRISMA_QUERY_ENGINE_LIBRARY="${pkgs.prisma-engines}/lib/libquery_engine.node"

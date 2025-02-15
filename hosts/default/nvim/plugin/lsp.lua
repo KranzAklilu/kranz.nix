@@ -58,6 +58,12 @@ require("lspconfig").tailwindcss.setup({
 	on_attach = on_attach,
 	capabilities = capabilities,
 })
+
+require("lspconfig").prismals.setup({
+	on_attach = on_attach,
+	capabilities = capabilities,
+})
+
 require("lspconfig").gopls.setup({
 	on_attach = on_attach,
 	capabilities = capabilities,
