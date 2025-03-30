@@ -15,6 +15,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [ "splash" "amd_pstate=disable" ];
+  # boot.extraModulePackages = [ config.boot.kernelPackages.wireguard ];
 
   environment.pathsToLink =
     [ "/libexec" ]; # links /libexec from derivations to /run/current-system/sw
@@ -32,7 +33,33 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-
+  #
+  # networking.firewall = {
+  #   allowedUDPPorts =
+  #     [ 51820 ]; # Clients and peers can use the same port, see listenport
+  # };
+  # # Enable WireGuard
+  # networking.wireguard.interfaces = {
+  #   # "wg0" is the network interface name. You can name the interface arbitrarily.
+  #   wg0 = {
+  #     # Determines the IP address and subnet of the client's end of the tunnel interface.
+  #     ips = [ "10.100.0.2/24" ];
+  #     listenPort =
+  #       51820; # to match firewall allowedUDPPorts (without this wg uses random port numbers)
+  #
+  #     # Path to the private key file.
+  #     #
+  #     # Note: The private key can also be included inline via the privateKey option,
+  #     # but this makes the private key world-readable; thus, using privateKeyFile is
+  #     # recommended.
+  #     privateKeyFile = "~/wireguard/private";
+  #
+  #     peers = [
+  #
+  #     ];
+  #   };
+  # };
+  #
   # Set your time zone.
   time.timeZone = "Africa/Addis_Ababa";
 
@@ -202,18 +229,14 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   environment.systemPackages = with pkgs; [
-    # Flakes clones its dependencies through the git command,
-    # so git must be installed first
     git
     vim
     wget
     curl
     python3
     poetry
-    # clang
-    # rustup
+
     zsh
-    nodePackages.prisma
 
     kitty
     obs-studio
@@ -230,9 +253,9 @@
     # activitywatch
     vulkan-headers
 
-    # kde themeing
-    libsForQt5.qtstyleplugin-kvantum
-    libsForQt5.qt5ct
+    # wireguard
+    wireguard-tools
+
     killall
     vulkan-loader
     vulkan-validation-layers

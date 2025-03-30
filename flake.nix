@@ -40,12 +40,12 @@
             home-manager.users.kranz = import ./hosts/default/home.nix;
 
           }
-          ({ pkgs, ... }: {
-            environment.systemPackages = with pkgs; [
-              inputs.fenix.packages.${pkgs.system}.minimal.toolchain
-              rust-analyzer
-            ];
-          })
+          # ({ pkgs, ... }: {
+          #   environment.systemPackages = with pkgs; [
+          #     inputs.fenix.packages.${pkgs.system}.minimal.toolchain
+          #     rust-analyzer
+          #   ];
+          # })
         ];
       };
     };
