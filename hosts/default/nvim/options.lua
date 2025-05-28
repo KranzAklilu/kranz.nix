@@ -105,7 +105,12 @@ vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower win
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 
 --close buffer without closing split windows
-vim.keymap.set("n", "<leader>x", "<cmd>bp\\|bd<CR>", { desc = "close current buffer" })
+-- vim.keymap.set("n", "<leader>x", "<cmd>bp\\|bd #<CR>", { desc = "close current buffer" })
+vim.keymap.set("n", "<leader>x", function()
+	local current = vim.api.nvim_get_current_buf()
+	vim.cmd("bprevious")
+	vim.cmd("bdelete " .. current)
+end)
 
 -- ts-tools
 vim.keymap.set("n", "<leader>ti", "<cmd>TSToolsAddMissingImports<CR>", { desc = "Typescript add missing imports" })

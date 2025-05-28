@@ -26,6 +26,6 @@ require("conform").setup({
 		yaml = { "prettierd" },
 		yml = { "prettierd" },
 		prisma = { "prettierd" },
-		astro = { "prettierd" },
+		astro = { "prettierd", "prettier" },
 	},
 })

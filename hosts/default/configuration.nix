@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, unstable, ... }:
 
 {
 
@@ -84,7 +84,6 @@
     enable = true;
 
     ## Load nvidia driver for Xorg and Wayland
-    # videoDrivers = [ "nvidia" "amdgpu" ];
     videoDrivers = [ "nvidia" ];
 
     desktopManager = {
@@ -131,8 +130,6 @@
   #tailscale 
   services.tailscale.enable = true;
 
-  # nessessary for sway
-  security.polkit.enable = true;
   # sound.enable = true;
   hardware.alsa.enablePersistence = true;
   security.rtkit.enable = true;
@@ -178,28 +175,11 @@
 
   # Install firefox.
   programs.firefox.enable = true;
+
   programs.rog-control-center.enable = true;
   programs.zsh.enable = true;
+  programs.dconf.enable = true;
 
-  # sway
-  programs.sway = {
-    enable = true;
-    wrapperFeatures.gtk = true;
-    extraPackages = with pkgs; [
-      linux-firmware
-      swaylock
-      swayidle
-      i3status-rust
-      wayland
-    ];
-
-    extraSessionCommands = ''
-      export MOZ_ENABLE_WAYLAND=1
-      export WLR_DRM_NO_MODIFIERS=1
-      export WLR_DRM_DEVICES=/dev/dri/card0
-    '';
-
-  };
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = [ ];
 
@@ -233,24 +213,25 @@
     vim
     wget
     curl
-    python3
-    poetry
 
     zsh
 
     kitty
+    alacritty
+
     obs-studio
+
     vlc
+
     glxinfo
     glmark2
-    sway
     pavucontrol
     qbittorrent
 
     brightnessctl
     openssl
 
-    # activitywatch
+    unstable.activitywatch
     vulkan-headers
 
     # wireguard
@@ -266,6 +247,7 @@
     EDITOR = "vim";
     WLR_RENDERER = "vulkan";
   };
+
   environment.sessionVariables = {
     PRISMA_SCHEMA_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/schema-engine";
     PRISMA_QUERY_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/query-engine";
@@ -336,20 +318,6 @@
 
   systemd.services.supergfxd.path = [ pkgs.pciutils pkgs.lsof ];
 
-  # necessary for sway
-  # kanshi systemd service
-  systemd.user.services.kanshi = {
-    description = "kanshi daemon";
-    environment = {
-      WAYLAND_DISPLAY = "wayland-1";
-      DISPLAY = ":0";
-    };
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.kanshi}/bin/kanshi -c kanshi_config_file";
-    };
-  };
-
   services = {
     asusd = {
       enable = true;
@@ -368,7 +336,7 @@
   hardware.nvidia = {
 
     # Modesetting is required.
-    modesetting.enable = false;
+    modesetting.enable = true;
 
     # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
     # Enable this if you have graphical corruption issues or application crashes after waking
@@ -391,19 +359,36 @@
 
     # Enable the Nvidia settings menu,
     # accessible via `nvidia-settings`.
-    nvidiaSettings = true;
+    nvidiaSettings = false;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.beta.overrideAttrs (old:
+      let version = "570.133.07";
+      in {
+        src = pkgs.fetchurl {
+          url =
+            "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run";
+          sha256 = "sha256-LUPmTFgb5e9VTemIixqpADfvbUX1QoTT2dztwI3E3CY=";
+        };
+      });
     prime = {
-      # offload = {
-      #   enable = true;
-      #   enableOffloadCmd = true;
-      # };
       sync.enable = true;
 
       amdgpuBusId = "PCI:101:0:0";
       nvidiaBusId = "PCI:1:0:0";
+    };
+  };
+  specialisation = {
+    on-the-go.configuration = {
+      system.nixos.tags = [ "on-the-go" ];
+      services.xserver = { videoDrivers = lib.mkForce [ "amdgpu" ]; };
+
+      hardware.nvidia = {
+        prime.offload.enable = lib.mkForce true;
+        prime.offload.enableOffloadCmd = lib.mkForce true;
+        prime.sync.enable = lib.mkForce false;
+      };
     };
   };
 }

@@ -28,7 +28,7 @@ bindsym $mod+Up focus up
 bindsym $mod+Down focus down
 bindsym $mod+Left focus left
 bindsym $mod+Right focus right
-bindsym $mod+Return exec kitty
+bindsym $mod+Return exec alacritty
 
 # move
 bindsym $mod+Shift+l move right
@@ -44,7 +44,8 @@ bindsym $mod+Shift+e exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b '
 bindsym $mod+Shift+minus move scratchpad
 bindsym $mod+Shift+q kill
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+space floating toggle
+bindsym $mod+t floating toggle
+bindsym $mod+x layout toggle split tabbed stacking
 
 bindsym $mod+a focus parent
 bindsym $mod+d exec rofi -no-config -no-lazy-grab -show drun -modi drun -theme ~/.config/rofi/theme.rasi
@@ -61,7 +62,7 @@ bindsym $mod+j focus down
 bindsym $mod+h focus left
 bindsym $mod+l focus right
 bindsym $mod+k focus up
-# bindsym $mod+Shift+l exec systemctl suspend & betterlockscreen -l
+bindsym $mod+Shift+x exec systemctl suspend & betterlockscreen -l
 
 mode "resize" {
   bindsym Down resize grow height 10 px or 10 ppt
@@ -77,10 +78,11 @@ bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl --min-val=5 -q 
 bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl -q -d amdgpu_bl1 s 5%+
 
 exec --no-startup-id i3-msg 'workspace 9; exec firefox'
-exec --no-startup-id i3-msg 'workspace 10; exec kitty'
 exec --no-startup-id i3-msg 'workspace 19; exec firefox'
 exec --no-startup-id i3-msg 'workspace 18; exec obsidian'
-exec --no-startup-id i3-msg 'workspace 20; exec kitty'
+exec --no-startup-id i3-msg 'workspace 10; exec alacritty'
+exec --no-startup-id i3-msg 'workspace 20; exec alacritty'
 
 exec_always --no-startup-id feh --bg-fill ~/.config/theme/images/wallpaper/nix-wallpaper-binary-red.png
+exec aw-qt
 exec_always ~/.config/polybar/launch.sh

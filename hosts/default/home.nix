@@ -5,17 +5,6 @@
   home.homeDirectory = "/home/kranz";
 
   # link the configuration file in current directory to the specified location in home directory
-  # home.file.".config/sway/wallpaper.jpg".source = ./wallpaper.jpg;
-
-  # link all files in `./scripts` to `~/.config/i3/scripts`
-  home.file.".config/sway" = {
-    source = ./sway;
-    recursive = true; # link recursively
-    executable = true; # make all files executable
-    onChange = ''
-      ${pkgs.sway}/bin/swaymsg reload
-    '';
-  };
 
   home.file.".config/i3" = {
     source = ./i3;
@@ -24,7 +13,8 @@
       ${pkgs.i3}/bin/i3-msg reload
     '';
   };
-  home.file.".config/polybar" = { source = ./polybar; };
+  home.file.".config/polybar".source = config.lib.file.mkOutOfStoreSymlink
+    /home/kranz/main/nixos/hosts/default/polybar;
   home.file.".config/rofi" = { source = ./rofi; };
   home.file.".config/theme/images" = { source = ./images; };
 
@@ -46,6 +36,7 @@
 
     # archives
     zip
+    unzip
     xz
 
     # utils
@@ -74,6 +65,7 @@
     ripgrep
     xclip
     feh
+    dysk
 
     # chat
     telegram-desktop
@@ -82,7 +74,10 @@
     # other software
     # insecure https://www.openwall.com/lists/oss-security/2024/10/30/4
     # qbittorrent
+
+    # api caller
     postman
+    hoppscotch
 
     # it provides the command `nom` works just like `nix`
     # with more details log output
@@ -96,6 +91,7 @@
     btop # replacement of htop/nmon
     iotop # io monitoring
     iftop # network monitoring
+    powertop # power monitoring
 
     # system call monitoring
     strace # system call monitoring
@@ -105,12 +101,11 @@
     lm_sensors # for `sensors` command
 
     # dev
+    code-cursor
     nodejs_20
     # nodejs_18
     yarn
     pnpm
-    go
-    protobuf_26
 
     # formatters
     prettierd
@@ -129,20 +124,18 @@
     lua-language-server
     gopls
 
-    #swaylock
     light
     rofi
     rofi-screenshot
 
     #ai stuff
     codeium
-
   ];
 
   home.sessionVariables = {
     EDITOR = "nvim";
     BROWSER = "firefox";
-    TERMINAL = "kitty";
+    TERMINAL = "alacritty";
   };
 
   programs.git = {
@@ -251,7 +244,8 @@
       plenary-nvim
 
       undotree
-      copilot-vim
+
+      codeium-nvim
 
       {
         plugin = codeium-nvim;
@@ -278,6 +272,8 @@
         config = toLuaFile ./nvim/plugin/typescript-tools.lua;
       }
 
+      lspkind-nvim
+
       {
         plugin = nightfox-nvim;
         config = "colorscheme carbonfox";
@@ -294,8 +290,6 @@
       }
 
       neodev-nvim
-
-      #nvim-cmp 
 
       {
         plugin = nvim-cmp;
@@ -335,6 +329,17 @@
           p.tree-sitter-go
           p.tree-sitter-gomod
           p.tree-sitter-prisma
+
+          (pkgs.tree-sitter.buildGrammar {
+            language = "astro";
+            version = "8af0aab";
+            src = pkgs.fetchFromGitHub {
+              owner = "virchau13";
+              repo = "tree-sitter-astro";
+              rev = "6e3bad36a8c12d579e73ed4f05676141a4ccf68d";
+              sha256 = "sha256-ZsItSpYeSPnHn4avpHS54P4J069X9cW8VCRTM9Gfefg=";
+            };
+          })
         ]));
         config = toLuaFile ./nvim/plugin/treesitter.lua;
       }
@@ -387,6 +392,9 @@
       export PRISMA_INTROSPECTION_ENGINE_BINARY="${pkgs.prisma-engines}/bin/introspection-engine"
       export PRISMA_FMT_BINARY="${pkgs.prisma-engines}/bin/prisma-fmt"
 
+      export PATH="/home/kranz/go/bin:$PATH"
+      export PATH="/home/kranz/.cache/npm/global/bin:$PATH"
+      export PATH="/usr/local/bin:$PATH"
     '';
     history = {
       size = 10000;
@@ -422,12 +430,6 @@
     };
     enable = true;
     script = "exec polybar main";
-  };
-
-  # sway config
-  wayland.windowManager.sway = {
-    enable = true;
-    extraOptions = [ "--unsupported-gpu" ];
   };
 
   # This value determines the home Manager release that your
