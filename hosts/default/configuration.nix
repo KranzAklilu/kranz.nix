@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, lib, unstable, ... }:
 
 {
@@ -95,8 +91,6 @@
       };
     };
 
-    displayManager.lightdm.enable = true;
-
     windowManager.i3 = {
       enable = true;
       extraPackages = with pkgs; [ betterlockscreen rofi polybar ];
@@ -111,6 +105,20 @@
     };
   };
 
+  # wayland.windowManager.sway = {
+  #   enable = true;
+  #   extraPackages = with pkgs; [ betterlockscreen rofi polybar ];
+  #   config = rec {
+  #     modifier = "Mod4";
+  #     # Use kitty as default terminal
+  #     terminal = "alacritty";
+  #     startup = [
+  #       # Launch Firefox on start
+  #       { command = "firefox"; }
+  #     ];
+  #   };
+  # };
+
   # bluetooth
   services.blueman.enable = true;
 
@@ -119,8 +127,8 @@
   services.libinput.touchpad.naturalScrolling = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  # services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
+  services.displayManager.sddm.enable = true;
+  # services.desktopManager.plasma6.enable = true;
 
   # hopefully disables xorg from getting stuck when rebuilding
   # systemd.services.display-manager.restartIfChanged = false;
@@ -130,23 +138,38 @@
   #tailscale 
   services.tailscale.enable = true;
 
-  # sound.enable = true;
-  hardware.alsa.enablePersistence = true;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    audio.enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    jack.enable = true;
+  # Enable the gnome-keyring secrets vault. 
+  # Will be exposed through DBus to programs willing to store secrets.
+  services.gnome.gnome-keyring.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-    wireplumber.enable = true;
-  };
+  # rtkit (optional, recommended) allows Pipewire to use the realtime scheduler for increased performance.
+  security.rtkit.enable = true;
+
+  # services.pipewire = {
+  # enable = false;
+  # audio.enable = true;
+  # alsa.enable = true;
+  # alsa.support32Bit = true;
+  # pulse.enable = false;
+  # # If you want to use JACK applications, uncomment this
+  # jack.enable = true;
+  #
+  # # use the example session manager (no others are packaged yet so this is enabled by default,
+  # # no need to redefine it in your config for now)
+  # #media-session.enable = true;
+  # wireplumber = {
+  #   enable = true;
+  #   # bluetooth.autoswitch-to-headset-profile = false;
+  #   # extraConfig."10-bluez" = {
+  #   #   "monitor.bluez.properties" = {
+  #   #     "bluez5.enable-sbc-xq" = true;
+  #   #     "bluez5.enable-msbc" = true;
+  #   #     "bluez5.enable-hw-volume" = true;
+  #   #     "bluez5.roles" = [ "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag" ];
+  #   #   };
+  #   # };
+  # };
+  # };
 
   services.openssh = {
     enable = true;
@@ -162,26 +185,32 @@
     isNormalUser = true;
     description = "kranz";
     extraGroups = [ "networkmanager" "wheel" "media" "video" "audio" "docker" ];
-    shell = pkgs.zsh;
+    shell = pkgs.fish;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGcRmO87UaWNhjhM5XdYGZeOa2vkeZA5GJdYYC/humnb kranz@asus-g14"
     ];
-    packages = with pkgs;
-      [
-        kdePackages.kate
-        #  thunderbird
-      ];
   };
+
+  # users.users.fun = {
+  #   isNormalUser = true;
+  #   description = "fun account";
+  #   extraGroups = [ "networkmanager" "wheel" "media" "video" "audio" "docker" ];
+  #   shell = pkgs.fish;
+  # };
 
   # Install firefox.
   programs.firefox.enable = true;
 
   programs.rog-control-center.enable = true;
-  programs.zsh.enable = true;
+  # programs.zsh.enable = true;
+  programs.fish.enable = true;
   programs.dconf.enable = true;
 
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = [ ];
+
+  programs.hyprland.enable = true;
+  programs.sway.enable = true;
 
   programs.steam = {
     enable = true;
@@ -197,6 +226,8 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.nvidia.acceptLicense = true;
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # nixpkgs.config.qt5 = {
   #   enable = true;
   #   platformTheme = "qt5ct";
@@ -206,15 +237,15 @@
   #   };
   # };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
   environment.systemPackages = with pkgs; [
     git
     vim
     wget
     curl
 
-    zsh
+    # zsh
+    fish
+    grc
 
     kitty
     alacritty
@@ -226,15 +257,14 @@
     glxinfo
     glmark2
     pavucontrol
-    qbittorrent
 
     brightnessctl
     openssl
 
     unstable.activitywatch
+    obsidian
     vulkan-headers
 
-    # wireguard
     wireguard-tools
 
     killall
@@ -242,21 +272,19 @@
     vulkan-validation-layers
     vulkan-tools
     alsa-utils
+
+    hyprpaper
+
+    # for obs to work in hyprland
+    # https://gist.github.com/brunoanc/2dea6ddf6974ba4e5d26c3139ffb7580
+    xdg-desktop-portal-hyprland
+
+    hoppscotch
+    redis
   ];
   environment.variables = {
     EDITOR = "vim";
     WLR_RENDERER = "vulkan";
-  };
-
-  environment.sessionVariables = {
-    PRISMA_SCHEMA_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/schema-engine";
-    PRISMA_QUERY_ENGINE_BINARY = "${pkgs.prisma-engines}/bin/query-engine";
-    PRISMA_QUERY_ENGINE_LIBRARY =
-      "${pkgs.prisma-engines}/lib/libquery_engine.node";
-    PRISMA_INTROSPECTION_ENGINE_BINARY =
-      "${pkgs.prisma-engines}/bin/introspection-engine";
-    PRISMA_FMT_BINARY = "${pkgs.prisma-engines}/bin/prisma-fmt";
-    PRISMA_CLI_BINARY_TARGETS = "linux";
   };
 
   # Add docker
@@ -310,13 +338,14 @@
       CPU_HWP_DYN_BOOST_ON_AC = 1;
       CPU_HWP_DYN_BOOST_ON_BAT = 0;
 
+      # tlp might be responsible for blocking bluetooth
+      USB_AUTOSUSPEND = 0;
+
       START_CHARGE_THRESH_BAT1 = 0;
       STOP_CHARGE_THRESH_BAT1 = 80; # 80 and above it stops charging
     };
   };
   services.supergfxd.enable = true;
-
-  systemd.services.supergfxd.path = [ pkgs.pciutils pkgs.lsof ];
 
   services = {
     asusd = {
@@ -324,6 +353,10 @@
       enableUserService = true;
     };
   };
+
+  systemd.services.supergfxd.path = [ pkgs.pciutils pkgs.lsof ];
+
+  hardware.alsa.enablePersistence = true;
 
   # Enable graphics
   hardware.graphics = {
@@ -359,19 +392,19 @@
 
     # Enable the Nvidia settings menu,
     # accessible via `nvidia-settings`.
-    nvidiaSettings = false;
+    nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    # package = config.boot.kernelPackages.nvidiaPackages.stable;
-    package = config.boot.kernelPackages.nvidiaPackages.beta.overrideAttrs (old:
-      let version = "570.133.07";
-      in {
-        src = pkgs.fetchurl {
-          url =
-            "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run";
-          sha256 = "sha256-LUPmTFgb5e9VTemIixqpADfvbUX1QoTT2dztwI3E3CY=";
-        };
-      });
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # package = config.boot.kernelPackages.nvidiaPackages.beta.overrideAttrs (old:
+    #   let version = "570.133.07";
+    #   in {
+    #     src = pkgs.fetchurl {
+    #       url =
+    #         "https://download.nvidia.com/XFree86/Linux-x86_64/${version}/NVIDIA-Linux-x86_64-${version}.run";
+    #       sha256 = "sha256-LUPmTFgb5e9VTemIixqpADfvbUX1QoTT2dztwI3E3CY=";
+    #     };
+    #   });
     prime = {
       sync.enable = true;
 

@@ -2,10 +2,10 @@
   description = "A simple NixOS flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     prisma = { url = "github:pimeys/nixos-prisma"; };
@@ -14,6 +14,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     monitor-affinity.url = "github:davidmreed/monitor-affinity";
+    hyprpaper = {
+      url = "github:hyprwm/hyprpaper";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, ... }:
@@ -31,10 +35,12 @@
         system = system;
 
         modules = [
-          ({ config, ... }: { _module.args = { unstable = unstablePkgs; }; })
-          # Import the previous configuration.nix we used,
-          # so the old configuration file still takes effect
           ./hosts/default/configuration.nix
+
+          ({ config, ... }: {
+            nixpkgs.config.allowUnfree = true;
+            _module.args = { unstable = unstablePkgs; };
+          })
 
           common
           home-manager.nixosModules.home-manager

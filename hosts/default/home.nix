@@ -17,6 +17,15 @@
     /home/kranz/main/nixos/hosts/default/polybar;
   home.file.".config/rofi" = { source = ./rofi; };
   home.file.".config/theme/images" = { source = ./images; };
+  home.file.".config/alacritty" = { source = ./alacritty; };
+  home.file.".config/hypr" = { source = ./hypr; };
+  home.file.".config/waybar" = { source = ./waybar; };
+  home.file.".config/scripts" = {
+    source = ./scripts;
+    recursive = true;
+    executable = true;
+  };
+  # home.file.".local/share/fonts" = { source = ./fonts; };
 
   # encode the file content in nix configuration file directly
   # home.file.".xxx".text = ''
@@ -31,9 +40,6 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
-
-    fastfetch
-
     # archives
     zip
     unzip
@@ -46,26 +52,21 @@
     eza # A modern replacement for ‘ls’
     fzf # A command-line fuzzy finder
     gh # github cli
+    fastfetch # system info
+    cowsay # cowsay
+    file # determine filetype
+    which # shows full path of cmds
+    tree # list of files&dir in tree format
+    ripgrep # searches for stuff
+    xclip # clipboard
+    feh # wallpapaer
+    dysk # disk stat
 
-    # networking tools
-    mtr # A network diagnostic tool
-    iperf3
-    dnsutils # `dig` + `nslookup`
-    ldns # replacement of `dig`, it provide the command `drill`
-    aria2 # A lightweight multi-protocol & multi-source command-line download utility
-    socat # replacement of openbsd-netcat
-    nmap # A utility for network discovery and security auditing
-    ipcalc # it is a calculator for the IPv4/v6 addresses
+    rofi # menu
+    rofi-screenshot # ss tool
+    swaylock-effects # pretty swaylock
 
-    # misc
-    cowsay
-    file
-    which
-    tree
-    ripgrep
-    xclip
-    feh
-    dysk
+    cliphist
 
     # chat
     telegram-desktop
@@ -73,20 +74,16 @@
 
     # other software
     # insecure https://www.openwall.com/lists/oss-security/2024/10/30/4
-    # qbittorrent
+    qbittorrent
 
     # api caller
-    postman
-    hoppscotch
-
-    # it provides the command `nom` works just like `nix`
-    # with more details log output
-    nix-output-monitor
+    # postman
+    # hoppscotch
 
     # productivity
     hugo # static site generator
     glow # markdown previewer in terminal
-    obsidian # note taking
+    gnome-clocks
 
     btop # replacement of htop/nmon
     iotop # io monitoring
@@ -101,11 +98,10 @@
     lm_sensors # for `sensors` command
 
     # dev
-    code-cursor
     nodejs_20
-    # nodejs_18
     yarn
     pnpm
+    python3
 
     # formatters
     prettierd
@@ -115,21 +111,23 @@
     #docs
     libre
     libreoffice-qt
-    hunspell
+
+    # learn
+    kdePackages.okular
+    anki
 
     # lsps
     tailwindcss-language-server
     nodePackages_latest.typescript-language-server
-    nodePackages_latest."@prisma/language-server"
+    # nodePackages_latest."@prisma/language-server"
     lua-language-server
     gopls
 
-    light
-    rofi
-    rofi-screenshot
-
     #ai stuff
     codeium
+
+    #misc
+    aw-watcher-window-wayland
   ];
 
   home.sessionVariables = {
@@ -142,6 +140,10 @@
     enable = true;
     userName = "Kranz Aklilu";
     userEmail = "kranzaklilu@gmail.com";
+    aliases = {
+      s = "status";
+      cm = "commit";
+    };
   };
 
   # starship - an customizable prompt for any shell
@@ -169,6 +171,12 @@
       unbind C-b
       set -g prefix C-s
 
+
+      # modern colors
+      set -g default-terminal "tmux-256color"
+      set -ga terminal-overrides ",alacritty:Tc"
+
+
       unbind '"'
       unbind %
 
@@ -180,6 +188,9 @@
       bind l select-pane -R
       bind p last-window
       bind b previous-window
+
+      bind H swap-pane -U
+      bind L swap-pane -D
 
       set-option -g mouse on
       set -g @catppuccin_flavour 'mocha'
@@ -245,10 +256,8 @@
 
       undotree
 
-      codeium-nvim
-
       {
-        plugin = codeium-nvim;
+        plugin = windsurf-nvim;
         config = toLuaFile ./nvim/plugin/codeium.lua;
       }
 
@@ -274,9 +283,14 @@
 
       lspkind-nvim
 
+      # {
+      #   plugin = nightfox-nvim;
+      #   config = "colorscheme carbonfox";
+      # }
+
       {
-        plugin = nightfox-nvim;
-        config = "colorscheme carbonfox";
+        plugin = tokyonight-nvim;
+        config = "colorscheme tokyonight-storm";
       }
 
       {
@@ -368,56 +382,94 @@
     '';
   };
 
-  programs.zsh = {
+  # programs.zsh = {
+  #   enable = false;
+  #   enableCompletion = true;
+  #   autosuggestion.enable = true;
+  #   syntaxHighlighting.enable = true;
+  #
+  #   oh-my-zsh = {
+  #     enable = true;
+  #     theme = "robbyrussell";
+  #     plugins = [ "git" "z" "sudo" "web-search" "copypath" "copyfile" ];
+  #   };
+  #   shellAliases = {
+  #     ll = "ls -l";
+  #     ":q" = "exit";
+  #     switch = "sudo nixos-rebuild switch --flake .";
+  #     test = "sudo nixos-rebuild test --flake .";
+  #   };
+  #   initExtra = ''
+  #     export PRISMA_SCHEMA_ENGINE_BINARY="${pkgs.prisma-engines}/bin/schema-engine"
+  #     export PRISMA_QUERY_ENGINE_BINARY="${pkgs.prisma-engines}/bin/query-engine"
+  #     export PRISMA_QUERY_ENGINE_LIBRARY="${pkgs.prisma-engines}/lib/libquery_engine.node"
+  #     export PRISMA_INTROSPECTION_ENGINE_BINARY="${pkgs.prisma-engines}/bin/introspection-engine"
+  #     export PRISMA_FMT_BINARY="${pkgs.prisma-engines}/bin/prisma-fmt"
+  #
+  #     export PATH="/home/kranz/go/bin:$PATH"
+  #     export PATH="/home/kranz/.cache/npm/global/bin:$PATH"
+  #     export PATH="/usr/local/bin:$PATH"
+  #   '';
+  #   history = {
+  #     size = 10000;
+  #     path = "${config.xdg.dataHome}/zsh/history";
+  #   };
+  #
+  #   plugins = [{
+  #     name = "zsh-nix-shell";
+  #     file = "nix-shell.plugin.zsh";
+  #     src = pkgs.fetchFromGitHub {
+  #       owner = "chisui";
+  #       repo = "zsh-nix-shell";
+  #       rev = "v0.8.0";
+  #       sha256 = "1lzrn0n4fxfcgg65v0qhnj7wnybybqzs4adz7xsrkgmcsr0ii8b7";
+  #     };
+  #   }];
+  # };
+  wayland.windowManager.hyprland = {
     enable = true;
-    enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+    settings = { };
+  }; # enable Hyprland
 
-    oh-my-zsh = {
-      enable = true;
-      theme = "robbyrussell";
-      plugins = [ "git" "z" "sudo" "web-search" "copypath" "copyfile" ];
-    };
-    shellAliases = {
-      ll = "ls -l";
-      ":q" = "exit";
-      switch = "sudo nixos-rebuild switch --flake .";
-      test = "sudo nixos-rebuild test --flake .";
-    };
-    initExtra = ''
-      export PRISMA_SCHEMA_ENGINE_BINARY="${pkgs.prisma-engines}/bin/schema-engine"
-      export PRISMA_QUERY_ENGINE_BINARY="${pkgs.prisma-engines}/bin/query-engine"
-      export PRISMA_QUERY_ENGINE_LIBRARY="${pkgs.prisma-engines}/lib/libquery_engine.node"
-      export PRISMA_INTROSPECTION_ENGINE_BINARY="${pkgs.prisma-engines}/bin/introspection-engine"
-      export PRISMA_FMT_BINARY="${pkgs.prisma-engines}/bin/prisma-fmt"
+  programs.fish = {
+    enable = true;
+    interactiveShellInit = ''
+      set fish_greeting # Disable greeting
 
       export PATH="/home/kranz/go/bin:$PATH"
       export PATH="/home/kranz/.cache/npm/global/bin:$PATH"
       export PATH="/usr/local/bin:$PATH"
+      export PATH="/home/kranz/.local/bin:$PATH"
     '';
-    history = {
-      size = 10000;
-      path = "${config.xdg.dataHome}/zsh/history";
+    shellAliases = {
+      ll = "ls -l";
+      ":q" = "exit";
+      nrs = "sudo nixos-rebuild switch --flake .";
+      nrt = "sudo nixos-rebuild test --flake .";
     };
 
-    plugins = [{
-      name = "zsh-nix-shell";
-      file = "nix-shell.plugin.zsh";
-      src = pkgs.fetchFromGitHub {
-        owner = "chisui";
-        repo = "zsh-nix-shell";
-        rev = "v0.8.0";
-        sha256 = "1lzrn0n4fxfcgg65v0qhnj7wnybybqzs4adz7xsrkgmcsr0ii8b7";
-      };
-    }];
+    plugins = [
+      {
+        name = "z";
+        src = pkgs.fishPlugins.z.src;
+      }
+      {
+        name = "grc";
+        src = pkgs.fishPlugins.grc.src;
+      }
+      {
+        name = "fzf";
+        src = pkgs.fishPlugins.fzf.src;
+      }
+    ];
   };
 
   programs.direnv = {
     enable = true;
-    enableZshIntegration = true; # see note on other shells below
+    # enableZshIntegration = true;
     nix-direnv.enable = true;
   };
+  programs.waybar.enable = true;
 
   services.polybar = {
     package = pkgs.polybar.override {
@@ -432,6 +484,7 @@
     script = "exec polybar main";
   };
 
+  services.hyprpaper = { enable = true; };
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
   # when a new home Manager release introduces backwards

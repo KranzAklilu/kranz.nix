@@ -23,9 +23,11 @@ require("conform").setup({
 		javascriptreact = { "prettierd" },
 		typescriptreact = { "prettierd" },
 		json = { "prettierd" },
+		jsonc = { "prettierd" },
 		yaml = { "prettierd" },
 		yml = { "prettierd" },
 		prisma = { "prettierd" },
 		astro = { "prettierd", "prettier" },
+		sql = { "prettierd", "prettier" },
 	},
 })

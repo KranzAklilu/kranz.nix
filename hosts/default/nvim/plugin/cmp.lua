@@ -4,12 +4,6 @@ local luasnip = require("luasnip")
 require("luasnip.loaders.from_vscode").lazy_load()
 luasnip.config.setup({})
 
-require("codeium").setup({
-	tools = {
-		language_server = "/etc/profiles/per-user/kranz/bin/codeium_language_server",
-	},
-})
-
 cmp.setup({
 	-- formatting = {
 	-- 	format = require("lspkind").cmp_format({
@@ -53,5 +47,6 @@ cmp.setup({
 	sources = {
 		{ name = "nvim_lsp" },
 		{ name = "luasnip" },
+		{ name = "codeium" },
 	},
 })

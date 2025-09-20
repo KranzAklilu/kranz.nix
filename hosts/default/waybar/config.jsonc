@@ -1,0 +1,53 @@
+[
+  {
+    "layer": "top",
+    "position": "top",
+    "spacing": 0,
+    "output": "!eDP-1",
+
+    "modules-left": [
+      "hyprland/workspaces",
+      "custom/uptime",
+      "cpu",
+      "custom/music",
+      "memory",
+      "disk",
+      "network#speed",
+    ],
+
+    "modules-center": ["clock"],
+
+    "modules-right": [
+      "custom/pomodoro",
+      "bluetooth",
+      "network",
+      "pulseaudio",
+      "backlight",
+      "battery",
+      "tray",
+    ],
+    "include": ["~/.config/waybar/modules.json"],
+  },
+
+  {
+    "layer": "top",
+    "position": "top",
+    "spacing": 0,
+    "output": "eDP-1",
+
+    "modules-left": ["hyprland/workspaces", "cpu", "memory", "network#speed"],
+
+    "modules-center": ["clock"],
+
+    "modules-right": [
+      "custom/pomodoro",
+      "bluetooth",
+      "network",
+      "pulseaudio",
+      "backlight",
+      "battery",
+      "tray",
+    ],
+    "include": ["~/.config/waybar/modules.json"],
+  },
+]

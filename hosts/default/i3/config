@@ -78,8 +78,6 @@ bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl --min-val=5 -q 
 bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl -q -d amdgpu_bl1 s 5%+
 
 exec --no-startup-id i3-msg 'workspace 9; exec firefox'
-exec --no-startup-id i3-msg 'workspace 19; exec firefox'
-exec --no-startup-id i3-msg 'workspace 18; exec obsidian'
 exec --no-startup-id i3-msg 'workspace 10; exec alacritty'
 exec --no-startup-id i3-msg 'workspace 20; exec alacritty'
 
