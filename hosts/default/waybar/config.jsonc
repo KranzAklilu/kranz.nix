@@ -35,7 +35,7 @@
     "spacing": 0,
     "output": "eDP-1",
 
-    "modules-left": ["hyprland/workspaces", "cpu", "memory", "network#speed"],
+    "modules-left": ["hyprland/workspaces", "memory", "network#speed"],
 
     "modules-center": ["clock"],
 
