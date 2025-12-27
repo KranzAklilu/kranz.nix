@@ -7,10 +7,23 @@
   ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [ "splash" "amd_pstate=disable" ];
+
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    device = "nodev";
+    useOSProber = true;
+    extraEntries = ''
+      menuentry "openSUSE" {
+        chainloader /EFI/opensuse/shim.efi
+      }
+    '';
+  };
+
   # boot.extraModulePackages = [ config.boot.kernelPackages.wireguard ];
 
   environment.pathsToLink =
@@ -281,6 +294,7 @@
 
     hoppscotch
     redis
+    sqlite
   ];
   environment.variables = {
     EDITOR = "vim";

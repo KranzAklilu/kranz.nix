@@ -3,6 +3,10 @@ vim.keymap.set("n", "<leader>tr", "<cmd>TSToolsRemoveUnused<CR>", { desc = "Type
 
 return require("typescript-tools").setup({
 	settings = {
+		on_attach = function(client)
+			-- Disable hover for typescript-tools
+			client.server_capabilities.hoverProvider = false
+		end,
 		tsserver_file_preferences = {
 			includeInlayParameterNameHints = "all",
 			includeCompletionsForModuleExports = true,

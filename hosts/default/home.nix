@@ -102,6 +102,7 @@
     yarn
     pnpm
     python3
+    rustup
 
     # formatters
     prettierd
@@ -155,6 +156,8 @@
       aws.disabled = true;
       gcloud.disabled = true;
       line_break.disabled = true;
+      package.disabled = true;
+      nix_shell.disabled = true;
     };
   };
 

@@ -1,4 +1,3 @@
-local nvim_lsp = require("lspconfig")
 local on_attach = function(_, bufnr)
 	local bufmap = function(keys, func)
 		vim.keymap.set("n", keys, func, { buffer = bufnr })
@@ -50,11 +49,11 @@ require("lspconfig").lua_ls.setup({
 -- 	capabilities = capabilities,
 -- })
 
-require("lspconfig").ts_ls.setup({
-	on_attach = on_attach,
-	root_dir = require("lspconfig").util.root_pattern({ "package.json", "tsconfig.json" }),
-	capabilities = capabilities,
-})
+-- require("lspconfig").ts_ls.setup({
+-- 	on_attach = on_attach,
+-- 	root_dir = require("lspconfig").util.root_pattern({ "package.json", "tsconfig.json" }),
+-- 	capabilities = capabilities,
+-- })
 
 require("lspconfig").denols.setup({
 	on_attach = on_attach,
